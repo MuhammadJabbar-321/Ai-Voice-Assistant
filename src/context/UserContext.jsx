@@ -185,22 +185,38 @@ function UserContext({ children }) {
   // -----------------------
   // SPEECH RECOGNITION
   // -----------------------
-  useEffect(() => {
-    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-    if (!SpeechRecognition) { alert("Speech Recognition not supported"); return; }
-    const recog = new SpeechRecognition();
-    recog.lang = "en-US";
-    recog.interimResults = false;
+useEffect(() => {
+  const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
 
-    recog.onresult = (e) => {
-      const transcript = e.results[0][0].transcript;
-      setprompt(transcript);
-      takeCommand(transcript.toLowerCase());
-    };
+  if (!SpeechRecognition) {
+    alert("Speech Recognition not supported");
+    return;
+  }
 
-    recog.onerror = (err) => console.error("Recognition Error:", err);
-    recognitionRef.current = recog;
-  }, []);
+  const recog = new SpeechRecognition();
+  recog.lang = "en-US";
+  recog.interimResults = false;
+  recog.continuous = false;
+
+  recog.onresult = (e) => {
+    const transcript = e.results[0][0].transcript;
+    console.log("USER SAID:", transcript);
+
+    setprompt(transcript);
+    takeCommand(transcript.toLowerCase());
+  };
+
+  recog.onerror = (err) => {
+    console.error("Recognition Error:", err);
+    setSpeaking(false);
+  };
+
+  recog.onend = () => {
+    setSpeaking(false);
+  };
+
+  recognitionRef.current = recog;
+}, []);
 
   // -----------------------
   // START LISTENING

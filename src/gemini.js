@@ -1,41 +1,48 @@
-let apiKey = "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";
+// gemini.js
+
+const apiKey = "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"; // ⚠️ replace this
 
 async function run(prompt) {
   try {
-    // Add word-limit instruction
-    const limitedPrompt = `
-      Respond in **exactly around 20 words**.
-      No long paragraphs. No extra explanation.
-      User request: ${prompt}
-    `;
+    if (!prompt || prompt.trim() === "") {
+      console.error("Empty prompt");
+      return "I didn't hear anything.";
+    }
+
+    const limitedPrompt = `Respond in around 20 words only. ${prompt}`;
 
     const response = await fetch("https://openrouter.ai/api/v1/chat/completions", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
-
-        // Required for frontend
         "Authorization": `Bearer ${apiKey}`,
         "HTTP-Referer": window.location.origin,
         "X-Title": "Shifra AI Assistant"
       },
       body: JSON.stringify({
         model: "meta-llama/llama-3.1-8b-instruct",
-        messages: [
-          { role: "user", content: limitedPrompt }
-        ]
+        messages: [{ role: "user", content: limitedPrompt }]
       }),
     });
 
+    // ✅ FIX: check API response
+    if (!response.ok) {
+      const errText = await response.text();
+      console.error("API ERROR:", errText);
+      return "Sorry, I can't connect right now.";
+    }
+
     const data = await response.json();
 
-    return (
-      data?.choices?.[0]?.message?.content ||
-      "No response!"
-    );
+    const text = data?.choices?.[0]?.message?.content;
+
+    if (!text) return "No response from AI.";
+
+    return text;
+
   } catch (err) {
-    console.error("OpenRouter error:", err);
-    return "Error contacting AI.";
+    console.error("Fetch error:", err);
+    return "Connection error.";
   }
 }
 
