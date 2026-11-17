@@ -1,3 +1,4 @@
+
 import React, { useContext } from "react";
 import "./App.css";
 import va from "./assets/ai.png";
@@ -7,34 +8,45 @@ import speak from "./assets/speak.gif";
 import ai from "./assets/aiVoice.gif";
 
 export default function App() {
-  const { startListening, speaking, prompt, response, setprompt,setResponse } = useContext(datacontext);
+  const {
+    startListening,
+    speaking,
+    listening,
+    prompt,
+    response,
+    setprompt,
+    setResponse
+  } = useContext(datacontext);
 
   return (
     <div className="main">
       <img src={va} alt="Shifra" id="shifra" />
+
       <span id="shifra-text">
-        I'm Shifra, your AI Assistant {speaking ? "(Speaking...)" : ""}
+        I'm Shifra, your AI Assistant
+        {speaking && " (Speaking...)"}
       </span>
 
-      {!speaking ? (
+      {listening ? (
+        <div className="response">
+          <img src={speak} alt="Listening" id="speak" />
+          <p>{prompt}</p>
+        </div>
+      ) : speaking ? (
+        <div className="response">
+          <img src={ai} alt="AI Speaking" id="ai" />
+          <p>{prompt}</p>
+        </div>
+      ) : (
         <button
           onClick={() => {
-            startListening(true);
-            setprompt("listening...");
+            setprompt("Listening...");
             setResponse(false);
+            startListening();
           }}
         >
           Click here <CiMicrophoneOn />
         </button>
-      ) : (
-        <div className="response">
-          {!response ? (
-            <img src={speak} alt="Listening" id="speak" />
-          ) : (
-            <img src={ai} alt="AI Speaking" id="ai" />
-          )}
-          <p>{prompt}</p>
-        </div>
       )}
     </div>
   );
