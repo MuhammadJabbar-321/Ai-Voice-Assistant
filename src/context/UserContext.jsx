@@ -1,5 +1,10 @@
 
-import React, { createContext, useEffect, useRef, useState } from "react";
+import React, {
+  createContext,
+  useEffect,
+  useRef,
+  useState,
+} from "react";
 
 export const datacontext = createContext();
 
@@ -14,7 +19,7 @@ function UserContext({ children }) {
   const recognitionRef = useRef(null);
   const audioPlayerRef = useRef(null);
 
-  // Audio player
+  // AUDIO PLAYER
   if (!audioPlayerRef.current && typeof window !== "undefined") {
     audioPlayerRef.current = new Audio();
   }
@@ -25,10 +30,14 @@ function UserContext({ children }) {
   function chooseFemaleVoice(voices, lang) {
     return (
       voices.find(
-        v => v.lang === lang && v.name.toLowerCase().includes("female")
+        (v) =>
+          v.lang === lang &&
+          v.name.toLowerCase().includes("female")
       ) ||
-      voices.find(v => v.name.toLowerCase().includes("female")) ||
-      voices.find(v => v.lang === lang) ||
+      voices.find((v) =>
+        v.name.toLowerCase().includes("female")
+      ) ||
+      voices.find((v) => v.lang === lang) ||
       voices[0]
     );
   }
@@ -80,14 +89,18 @@ function UserContext({ children }) {
       const res = await fetch("/api/chat", {
         method: "POST",
         headers: {
-          "Content-Type": "application/json"
+          "Content-Type": "application/json",
         },
-        body: JSON.stringify({ prompt: promptText })
+        body: JSON.stringify({
+          prompt: promptText,
+        }),
       });
 
       if (!res.ok) {
         const errorData = await res.json().catch(() => ({}));
-        throw new Error(errorData.error || `Server error: ${res.status}`);
+        throw new Error(
+          errorData.error || `Server error: ${res.status}`
+        );
       }
 
       const data = await res.json();
@@ -95,7 +108,9 @@ function UserContext({ children }) {
       console.log("AI RESPONSE:", data);
       console.log("AI PROVIDER:", data.provider);
 
-      const newText = String(data.text || "I could not generate a response.")
+      const newText = String(
+        data.text || "I could not generate a response."
+      )
         .replace(/\*\*/g, "")
         .replace(/\*/g, "")
         .replace(/meta ai/gi, "Jabbar");
@@ -104,13 +119,14 @@ function UserContext({ children }) {
       setResponse(true);
 
       speak(newText);
-
     } catch (error) {
       console.error("AI RESPONSE ERROR:", error);
 
       setSpeaking(false);
       setListening(false);
-      setprompt("Sorry, I cannot connect to my AI server. Please check the backend.");
+      setprompt(
+        "Sorry, I cannot connect to my AI server. Please check the backend."
+      );
       setResponse(true);
     }
   }
@@ -128,8 +144,12 @@ function UserContext({ children }) {
     setLanguage(lang);
 
     // CUSTOM RESPONSES
-    if (command.includes("what is your name") || command.includes("your name")) {
-      const answer = "My name is Shifra, AI Assistant created by Jabbar.";
+    if (
+      command.includes("what is your name") ||
+      command.includes("your name")
+    ) {
+      const answer =
+        "My name is Shifra, AI Assistant created by Jabbar.";
       setprompt(answer);
       setResponse(true);
       speak(answer);
@@ -167,15 +187,21 @@ function UserContext({ children }) {
 
     // YOUTUBE SEARCH
     if (
-      (command.includes("play") && command.includes("youtube")) ||
+      (command.includes("play") &&
+        command.includes("youtube")) ||
       command.includes("youtube search")
     ) {
       const query = command
-        .replace(/play|on youtube|youtube par|youtube search/gi, "")
+        .replace(
+          /play|on youtube|youtube par|youtube search/gi,
+          ""
+        )
         .trim();
 
       window.open(
-        `https://www.youtube.com/results?search_query=${encodeURIComponent(query)}`,
+        `https://www.youtube.com/results?search_query=${encodeURIComponent(
+          query
+        )}`,
         "_blank"
       );
 
@@ -234,7 +260,7 @@ function UserContext({ children }) {
         youtube: "https://www.youtube.com",
         tiktok: "https://www.tiktok.com",
         twitter: "https://twitter.com",
-        amazon: "https://www.amazon.com"
+        amazon: "https://www.amazon.com",
       };
 
       if (knownSites[site]) {
@@ -250,28 +276,33 @@ function UserContext({ children }) {
       }
 
       window.open(
-        `https://www.google.com/search?q=${encodeURIComponent(site)}`,
+        `https://www.google.com/search?q=${encodeURIComponent(
+          site
+        )}`,
         "_blank"
       );
+
       speak(`Searching for ${site}`);
       return;
     }
 
     // TIME AND DATE
     if (command.includes("time")) {
-      speak("The time is " + new Date().toLocaleTimeString());
+      speak(
+        "The time is " + new Date().toLocaleTimeString()
+      );
       return;
     }
 
     if (command.includes("date")) {
       speak(
         "Today's date is " +
-        new Date().toLocaleDateString(undefined, {
-          weekday: "long",
-          year: "numeric",
-          month: "long",
-          day: "numeric"
-        })
+          new Date().toLocaleDateString(undefined, {
+            weekday: "long",
+            year: "numeric",
+            month: "long",
+            day: "numeric",
+          })
       );
       return;
     }
@@ -283,10 +314,13 @@ function UserContext({ children }) {
   // SPEECH RECOGNITION
   useEffect(() => {
     const SpeechRecognition =
-      window.SpeechRecognition || window.webkitSpeechRecognition;
+      window.SpeechRecognition ||
+      window.webkitSpeechRecognition;
 
     if (!SpeechRecognition) {
-      console.error("Speech Recognition is not supported. Try Chrome.");
+      console.error(
+        "Speech Recognition is not supported. Try Chrome."
+      );
       return;
     }
 
@@ -297,14 +331,17 @@ function UserContext({ children }) {
     recog.continuous = false;
 
     recog.onresult = (event) => {
-      const transcript = event.results[0][0].transcript.trim();
+      const transcript =
+        event.results[0][0].transcript.trim();
 
       console.log("USER SAID:", transcript);
 
       setListening(false);
 
       if (!transcript) {
-        setprompt("I didn't hear anything. Please try again.");
+        setprompt(
+          "I didn't hear anything. Please try again."
+        );
         setResponse(true);
         return;
       }
@@ -338,21 +375,31 @@ function UserContext({ children }) {
   // START LISTENING
   function startListening() {
     if (!recognitionRef.current) {
-      console.error("Speech recognition is not initialized.");
+      console.error(
+        "Speech recognition is not initialized."
+      );
       return;
     }
 
     try {
       window.speechSynthesis?.cancel();
+
       setSpeaking(false);
       setListening(true);
       setprompt("Listening...");
       setResponse(false);
 
+      // USE SELECTED LANGUAGE
+      recognitionRef.current.lang = language;
+
       recognitionRef.current.start();
     } catch (error) {
-      console.error("Could not start microphone:", error);
+      console.error(
+        "Could not start microphone:",
+        error
+      );
       setListening(false);
+      setprompt("Could not start microphone. Try again.");
     }
   }
 
@@ -372,7 +419,7 @@ function UserContext({ children }) {
         language,
         setLanguage,
         miniPlayer,
-        setMiniPlayer
+        setMiniPlayer,
       }}
     >
       {children}
